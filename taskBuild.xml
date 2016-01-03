@@ -1,0 +1,69 @@
+<project name="example" default="openReport" xmlns:ivy="antlib:org.apache.ivy.ant">
+    <property name="src.dir" location="src/test"/>
+    <property name="src.java.dir" location="${src.dir}/java"/>
+    <property name="src.resources.dir" location="${src.dir}/resources"/>
+    <property name="target.dir" location="target"/>
+    <property name="target.classes.java.dir" location="${target.dir}/classes"/>
+    <property name="lib.dir" location="lib"/>
+    <ivy:retrieve file="./ivy.xml" sync="true"/>
+    <property name="junit.jar" location="${lib.dir}/junit-4.11.jar"/>
+    <property name="target.report.dir" location="${target.dir}/report"/>
+    <property name="browser" location="C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"/>
+
+    <path id="classpath">
+        <pathelement location="${target.classes.java.dir}"/>
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <target name="copy">
+
+    </target>
+
+    <target name="compile.java" depends="clean">
+        <mkdir dir="${target.classes.java.dir}"/>
+        <copy todir="${target.dir}/classes">
+            <fileset dir="${src.resources.dir}"/>
+        </copy>
+        <javac destdir="${target.classes.java.dir}" classpathref="classpath" encoding="UTF-8">
+            <src path="${src.java.dir}"/>
+        </javac>
+    </target>
+
+    <target name="compile" depends="compile.java"/>
+
+    <target name="test" depends="compile">
+        <mkdir dir="${target.report.dir}"/>
+        <property name="tests" value="TaskTest" />
+
+        <junit showoutput="on" printsummary="yes" haltonerror="no" haltonfailure="no" >
+            <formatter type="xml"/>
+            <formatter type="plain" usefile="false"/>
+            <batchtest todir="${target.report.dir}">
+                <fileset dir="${src.java.dir}">
+                    <include name="**/${tests}.java"/>
+                    <exclude name="**/Test*2.java"/>
+                </fileset>
+            </batchtest>
+            <classpath refid="classpath"/>
+
+        </junit>
+    </target>
+
+    <target name="report" depends="test">
+        <mkdir dir="${target.report.dir}/html"/>
+        <junitreport todir="${target.report.dir}">
+            <fileset dir="${target.report.dir}"/>
+
+            <report todir="${target.report.dir}\html"/>
+        </junitreport>
+    </target>
+    <target name="clean">
+        <delete dir="${target.dir}"/>
+    </target>
+    <target name="openReport" depends="report">
+        <exec executable="${browser}" spawn="true">
+            <arg value="${target.report.dir}\html\index.html"/>
+        </exec>
+    </target>
+
+</project>

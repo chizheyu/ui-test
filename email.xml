@@ -1,0 +1,17 @@
+<project name="example" default="email">
+	<tstamp>
+		<format property="TODAY_UK" pattern="d-MMMM-yyyy" locale="en"/>
+	</tstamp>
+     <target name="email">
+        
+        <mail  mailhost="smtp.163.com" mailport="25" subject="Test build"+"${TODAY_UK}" user="coding_test48@163.com" password="chi2014"  >
+            <from address="coding_test48@163.com"/>
+            <to address="675991451@qq.com"/>
+            <to address="66654300@qq.com"/>
+            <message>The  nightly build has completed</message>
+             <attachments>
+                各方
+            </attachments>                                                       
+        </mail>
+    </target>
+</project>

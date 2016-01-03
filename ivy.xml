@@ -1,0 +1,9 @@
+<ivy-module version="2.4">
+    <info organisation= "junitbook" module="example-ivy"/>
+    <dependencies>
+        <dependency org= "junit" name="junit" rev="4.11"/>
+        <dependency org="org.seleniumhq.selenium" name="selenium-java" rev="2.42.2"/>
+        <dependency org="com.github.detro" name="phantomjsdriver" rev="1.2.0"/>
+        <dependency org="log4j" name="log4j" rev="1.2.17"/>
+    </dependencies>
+</ivy-module>
