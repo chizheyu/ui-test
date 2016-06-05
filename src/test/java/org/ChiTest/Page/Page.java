@@ -4,10 +4,14 @@ import org.ChiTest.InterFace.ItemEntry;
 import org.ChiTest.InterFace.ItemFinder;
 import org.ChiTest.LinksMap;
 import org.ChiTest.PageLink;
+import org.ChiTest.TestHelper;
 import org.ChiTest.User.User;
 import org.ChiTest.WaitTool;
+import org.ChiTest.constans.RCHttpJsonResultObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.events.EventFiringWebDriver;
@@ -185,6 +189,141 @@ public class Page {
         }
         return true;
     }
+
+    /**
+     var data = new FormData();
+     data.append('user', 'person');
+     data.append('pwd', 'password');
+     data.append('organization', 'place');
+     data.append('requiredkey', 'key');
+
+     var xhr = new XMLHttpRequest();
+     xhr.open('POST', 'somewhere', false);
+     xhr.onreadystatechange = function() {
+        if(xhr.readyState == 4 && xhr.status == 200) {
+            var para=document.createElement("mySeleniumDiv");
+            document.getElementById("mySeleniumDiv").innerHTML=xmlhttp.responseText;
+        }
+     }
+     xhr.send(data);
+
+     */
+
+
+
+
+    public String sendRequest(Map<String ,String>  data ,String methodName,  String url ){
+        String dataString = "";
+        if(data != null ){
+            dataString = "var data = new FormData();";
+            for(Map.Entry<String, String> entry:data.entrySet()){
+                dataString += "\ndata.append('"+ entry.getKey() + "','" + entry.getValue() + "');\n";
+            }
+        }
+
+        String script =
+                "var xhr = new XMLHttpRequest();\n" +
+                "     xhr.open('" + methodName + "', '" + url + "', false);\n" +
+                "     xhr.onreadystatechange = function() {\n" +
+                "        if(xhr.readyState == 4 && xhr.status == 200) {\n" +
+                "           var para =  document.createElement(\"mySeleniumDiv\");\n" +
+                "           document.getElementsByTagName(\"mySeleniumDiv\").innerHTML=xhr.responseText;\n" +
+                "        }\n" +
+                "     }\n" +
+                "     xhr.send(data);";
+
+        driver.executeScript(dataString + script);
+        return (String) driver.executeScript("return document.getElementsByTagName(\"mySeleniumDiv\").innerHTML");
+    }
+
+
+    public void assertPostTrue(RCHttpJsonResultObject rcHttpJsonResultObject, String url){
+        assertEquals("post "+ url +" 执行失败", "true", rcHttpJsonResultObject.getSuccess());
+        assertEquals("post "+ url +" 执行失败", "true",  rcHttpJsonResultObject.getData());
+        assertEquals("post "+ url +" 执行失败", "null" ,rcHttpJsonResultObject.getErrorCode());
+        assertEquals("post "+ url +" 执行失败", "null" ,rcHttpJsonResultObject.getErrorMsg());
+    }
+
+    public void assertGetTrue(RCHttpJsonResultObject rcHttpJsonResultObject, String url){
+        assertEquals("get "+ url +" 执行失败", "true", rcHttpJsonResultObject.getSuccess());
+        assertEquals("get "+ url +" 执行失败", "", rcHttpJsonResultObject.getErrMsg());
+    }
+
+    public void assertDataExistInJason(List<JSONObject> jObjects, JSONObject jObject, String keyForFindObj){
+        for (JSONObject ojb:jObjects) {
+           assertTrue("没有找到要对比的对象", assertDataExistInJason(keyForFindObj, ojb, jObject));
+        }
+
+
+    }
+
+    public boolean assertDataExistInJason(String keyForFindObj,JSONObject expectJObject  , JSONObject actualJObject){
+        boolean isFind = false;
+        Iterator<?> keys = actualJObject.keys();
+        while( keys.hasNext() ) {
+            String key = (String)keys.next();
+            //若指定字段的值相同直接比较
+            if (key.equals( keyForFindObj) &&  expectJObject.get(keyForFindObj).equals(actualJObject.get(keyForFindObj).toString() )){
+                actualJObject.equals(expectJObject);
+                isFind = true;
+                return isFind;
+            }
+
+            //若字段是对象,则递归
+            if ( actualJObject.get(key) instanceof JSONObject ) {
+                if(assertDataExistInJason(keyForFindObj, expectJObject, actualJObject )){
+                    return true;
+                }
+            }
+
+            //若是数组则遍历数组递归
+            if (actualJObject.get(key) instanceof JSONArray){
+                JSONArray jsonArray =  (JSONArray) actualJObject.get(key);
+                for (int i = 0;  i< jsonArray.length() ;i++){
+                    if (assertDataExistInJason(keyForFindObj, expectJObject, jsonArray.getJSONObject(i) )){
+                        return true ;
+                    }
+                }
+            }
+        }
+        return  isFind;
+    }
+
+
+
+
+
+
+    public Object getConstructObjectFromJason(String responseString, Class<?> ObjectClass){
+        JSONObject obj = new JSONObject(responseString);
+        Object object = null;
+        try {
+            object = ObjectClass.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+
+        for(String entry:obj.keySet()){
+            try {
+                TestHelper.setClassField(object,entry, obj.get(entry).toString());
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return object;
+    }
+
+
+
+
+
+
+
+
+
     public boolean navigateContiansUrl(String url, String cssSelectorForWaitingElement)  {
         try {
             if (!(this.driver.getCurrentUrl().equals(url)||this.driver.getCurrentUrl().contains(url))) {
@@ -853,11 +992,11 @@ public class Page {
             return true;
         } catch (NoSuchElementException e) {
             assertEquals("this element: "+cssSelector +" is not exist ", 2,3);
-            return true;
+            return false;
         }
         catch (ElementNotVisibleException e) {
             assertEquals("this element: "+cssSelector +" is not visible ", 2,3);
-            return true;
+            return false;
         }
     }
     public boolean  clickElementWithTextChange(String cssSelector, String cssSelectorWaitingElement, String textSelector){
@@ -1148,7 +1287,7 @@ public class Page {
         try {
             File dir = new File(getScreenFileDir()) ;
             dir.mkdirs();
-            FileUtils.copyFile(driver.getScreenshotAs(OutputType.FILE), new File( getScreenFileDir()+"\\" +name+"_"+ (new Date()).getTime() + ".png"));
+            FileUtils.copyFile(driver.getScreenshotAs(OutputType.FILE), new File( getScreenFileDir()+"/" +name+"_"+ (new Date()).getTime() + ".png"));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,15 +1,8 @@
 package org.ChiTest.Bubbling;
 
-import dataReader.ConfigureInfo;
-import org.ChiTest.Email.EmailTest;
-import org.ChiTest.Friend.FriendFileReader;
-import org.ChiTest.Friend.RelationShip;
-import org.ChiTest.Notification.Notification;
-import org.ChiTest.Notification.NotificationFileReader;
-import org.ChiTest.Notification.NotificationTest;
+import org.ChiTest.congfig.ConfigureInfo;
 import org.ChiTest.Page.PS;
 import org.ChiTest.Page.Page;
-import org.ChiTest.PageLink;
 import org.ChiTest.User.User;
 import org.ChiTest.WebComponent.MarkDownInputBox;
 import org.ChiTest.WebComponent.SimpleCommentBox;
@@ -45,8 +38,6 @@ public class BubblingTest {
     private  static Cookie zombieCookie;
     private static SimpleCommentBox firstCommentBox;
     private static String bubblingMark;
-    private static NotificationTest notificationTest;
-    private static NotificationFileReader notificationFileReader;
     private static MarkDownInputBox bubblingSendBox;
     private BubblingFileReader bubblingFileReader;
     private static BubblingOperator zombieBubblingOperator;
@@ -60,10 +51,7 @@ public class BubblingTest {
     @BeforeClass()
     public  static void setup() throws Exception {
         ConfigureInfo ConfigureInfo = new ConfigureInfo(true, true);
-        if(2 == ConfigureInfo.getPlaterformOption()  ){
-            System.out.println("do not use coding.net to do test");
-            return;
-        }
+
         zombieUser = ConfigureInfo.getZombieUser();
         ciwangUser = ConfigureInfo.getCiwangUser();
 
@@ -72,8 +60,6 @@ public class BubblingTest {
         zombiePage = zombieUser.getPage();
         ciwangPage = ciwangUser.getPage();
 
-        ciwangCookie = ConfigureInfo.getCiwangCookie();
-        zombieCookie = ConfigureInfo.getZombieCookie();
 
         zombieUser.autoLogin(ConfigureInfo.getLoginUrl(),zombieCookie );
         ciwangUser.autoLogin( ConfigureInfo.getLoginUrl(),ciwangCookie);
@@ -84,16 +70,12 @@ public class BubblingTest {
         bubblingSendBox = new MarkDownInputBox(".feed-editor",".bubble-item",ciwangUser);
         autoLink = "https://coding.net/u/coding/p/Coding-Feedback/topic";
 
-        notificationTest = new NotificationTest();
-        notificationFileReader = new NotificationFileReader();
+
     }
 
     @Test
     public void test01_BubblingTooFastAndSendWithKeyBoard() throws InterruptedException, ParseException {
-        RelationShip zombieFollowCiwang = new RelationShip(zombieUser, ciwangUser);
-        RelationShip ciwangFollowZombie = new RelationShip(ciwangUser, zombieUser);
-        zombieFollowCiwang.followSomeone();
-        ciwangFollowZombie.followSomeone();
+
 
         Bubbling bubbling =  new Bubbling(zombieUser ,"h" + zombiePage.getMark());
         bubbling.sendBubblingWithTimeInterval();
@@ -432,66 +414,10 @@ public class BubblingTest {
         bubbling.sendBubbling();
         bubblingSendBox.removeCommentWithBackTest(zombiePage, 0, "泡泡");
     }
-    @Test
-    public void test15_Notification() throws Exception {
-        EmailTest emailTest = new EmailTest();
-        Set mailCheckList = new HashSet();
-        List<PageLink> bubblingPageLinks = new ArrayList<PageLink>();
-        Bubbling bubbling = new Bubbling(ciwangUser, "@"+zombieUser.getUserName()+" "+notificationMark);
-        bubbling.sendBubbling();
-        bubblingPageLinks.add(new PageLink(notificationFileReader.getNotificationSecondLink(), bubbling.getContent(),
-                bubblingFileReader.getBubblingTextContent(), bubbling.getBubblingDetailUrl()));
-        Notification atSomeoneInBubbling = new Notification(notificationFileReader.getAtSomeoneIconClass(),
-                bubbling.getSender(),bubbling.getSender().getUserName()+" 在冒泡 "+bubbling.getContent()+" 中提到了你", zombieUser,bubblingPageLinks);
-        notificationTest.verifyForMultiLinkFormat(atSomeoneInBubbling, "冒泡中@某人的通知", notificationFileReader.getAtSomeoneItemIcon());
-
-        firstCommentBox.sendItem(ciwangPage, "@"+ zombieUser.getUserName()+" hi");
-        Notification atSomeoneInBubblingComment = new Notification(notificationFileReader.getAtSomeoneIconClass(),ciwangUser,
-                atSomeoneInBubbling.getContent() + " :@"+zombieUser.getUserName()+" hi",
-                zombieUser, bubblingPageLinks);
-        notificationTest.verifyForMultiLinkFormat(atSomeoneInBubblingComment, "冒泡的评论中@某人的通知", notificationFileReader.getAtSomeoneItemIcon());
-
-        Bubbling zombieBubbling = new Bubbling(zombieUser, "nol"+notificationMark);
-        zombieBubbling.sendBubbling();
-        ciwangPage.refresh(bubblingFileReader.getBubblingTextContent());
-        firstCommentBox.sendItem(ciwangPage, "commentTest");
-        bubblingPageLinks = new ArrayList<PageLink>();
-        bubblingPageLinks.add(new PageLink(notificationFileReader.getNotificationSecondLink(), zombieBubbling.getContent(),
-                bubblingFileReader.getBubblingTextContent(), zombieBubbling.getBubblingDetailUrl()));
-        Notification BubblingCommentWithoutAt = new Notification(notificationFileReader.getCommentIconClass(),ciwangUser,
-                ciwangUser.getUserName()+" 回复了你的冒泡 "+zombieBubbling.getContent()+"：commentTest",zombieUser,  bubblingPageLinks);
-        notificationTest.verifyForMultiLinkFormat(BubblingCommentWithoutAt, "冒泡中回复某人（不@）的通知", notificationFileReader.getCommentItemIcon());
-
-        favorBubbling(ciwangPage);
-        Notification favorBubbling = new Notification(notificationFileReader.getFavorIconClass(),ciwangUser,
-                ciwangUser.getUserName()+" 赞了你的冒泡 "+zombieBubbling.getContent(),zombieUser,bubblingPageLinks );
-        notificationTest.verifyForMultiLinkFormat(favorBubbling, "冒泡中点赞的通知", notificationFileReader.getCommentItemIcon());
-
-        mailCheckList.add(atSomeoneInBubbling.getContent());
-        mailCheckList.add(atSomeoneInBubblingComment.getContent());
-        mailCheckList.add(BubblingCommentWithoutAt.getContent());
-        mailCheckList.add(favorBubbling.getContent());
-        Thread.sleep(5000);
-        emailTest.checkEmail(zombiePage,mailCheckList);
-    }
 
 
-    @Test
-    public void test10_UserAvatarAndBubbleDetails() throws InterruptedException, ParseException {
-        Bubbling bubbling = new Bubbling(ciwangUser, df.format(new Date())+bubblingMark);
-        bubbling.sendBubbling();
 
-        FriendFileReader friendFileReader = new FriendFileReader();
-        zombiePage.refresh(zombiePage.getBubblingUrl(), ".info .chat.outline ");
-        assertTrue("点击评论图标，没有到相应的冒泡详情网页", zombiePage.clickElement(".info .chat.outline ", ".center.user-name")) ;
-        zombiePage.assertTextContainWords("点击评论图标，进入相应的冒泡详情网页，但冒泡有误",
-                bubblingMark, bubblingFileReader.getBubblingTextContent());
-        if(!zombiePage.elementIsPresent(friendFileReader.getFollowButton())) {
-            zombiePage.clickElement(friendFileReader.getCancelFollowButton(), friendFileReader.getFollowButton());
-        }
-        zombiePage.clickElement(friendFileReader.getFollowButton());
-        assertTrue("冒泡详情页关注别人失败", zombiePage.elementIsPresent(friendFileReader.getCancelFollowButton(), 5));
-    }
+
     @Test
     public void test16_AdBannerAndFriendCircle() throws InterruptedException {
         zombiePage.refresh(zombieUser.getUserCenterLink(), ".activity.tabs");

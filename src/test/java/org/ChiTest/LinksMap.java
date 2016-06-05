@@ -1,6 +1,6 @@
 package org.ChiTest;
 
-import dataReader.ConfigureInfo;
+import org.ChiTest.congfig.ConfigureInfo;
 import org.ChiTest.Page.Page;
 import org.ChiTest.User.User;
 import org.apache.log4j.Logger;
@@ -42,9 +42,7 @@ public class LinksMap {
         ConfigureInfo ConfigureInfo = new ConfigureInfo(true, true);
         zombiePage = ConfigureInfo.getZombieUser().getPage();
         zombieUser = ConfigureInfo.getZombieUser();
-        zombieCookie = ConfigureInfo.getZombieCookie();
         ciwangUser = ConfigureInfo.getCiwangUser();
-        ciwangCookie = ConfigureInfo.getCiwangCookie();
         ciwangPage =  ConfigureInfo.getCiwangUser().getPage();
 
         zombieUser.autoLogin(ConfigureInfo.getLoginUrl(), zombieCookie);

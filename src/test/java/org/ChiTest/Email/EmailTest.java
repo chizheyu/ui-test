@@ -1,6 +1,7 @@
 package org.ChiTest.Email;
 
 import org.ChiTest.Page.Page;
+import org.junit.Ignore;
 import org.openqa.selenium.By;
 
 import java.util.Set;
@@ -11,7 +12,7 @@ import static org.junit.Assert.assertEquals;
  * Created by dugancaii on 9/25/2014.
  */
 
-
+@Ignore()
 public class EmailTest {
     private EmailFileReader emailFileReader;
     private Email email;
@@ -38,7 +39,7 @@ public class EmailTest {
             assertEquals(message,1,2);
         }
     }
-    public void checkEmail(Page zombiePage, Set mailCheckList,Email email) throws InterruptedException {
+    public void checkEmail(Page zombiePage, Set mailCheckList, Email email) throws InterruptedException {
         if(!emailFileReader.getCheckEmail().equals("1")){
             return;
         }

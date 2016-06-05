@@ -1,11 +1,12 @@
 package org.ChiTest.User;
 
-import dataReader.ConfigureInfo;
+import org.ChiTest.congfig.ConfigureInfo;
 import org.ChiTest.Page.PS;
 import org.ChiTest.Page.Page;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
+import reference.ConfigFileReader;
 
 import java.text.ParseException;
 import java.util.LinkedList;
@@ -18,6 +19,8 @@ public class User {
 
     private String UserLoginName;//若是你的昵称和个性后缀不一样，要用个性后缀名登录
     private String UserName;
+
+    ConfigFileReader fileReader = new ConfigFileReader();
 
     public String getUserPassword() {
         return UserPassword;
@@ -178,9 +181,9 @@ public class User {
 
 
     public User(){
-        this.UserLoginName = "test5";
-        this.UserName = "zombie_debug";
-        this.UserPassword =  "123456";
+        this.UserLoginName = fileReader.getValue("defaultUserName") ;
+        this.UserName = fileReader.getValue("defaultUserName");
+        this.UserPassword = fileReader.getValue("defaultUserPassword");
     }
     public User(String UserLoginName, String UserName, String UserPassword){
         this.UserLoginName = UserLoginName;
@@ -201,7 +204,6 @@ public class User {
         this.UserPassword =  UserPassword;
         this.avatar = avatar;
         this.projectName = projectName;
-
     }
 
 

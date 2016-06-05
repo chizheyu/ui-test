@@ -1,6 +1,6 @@
 package org.ChiTest;
 
-import dataReader.ConfigureInfo;
+import org.ChiTest.congfig.ConfigureInfo;
 import org.ChiTest.Page.Page;
 import org.ChiTest.User.User;
 import org.junit.After;
