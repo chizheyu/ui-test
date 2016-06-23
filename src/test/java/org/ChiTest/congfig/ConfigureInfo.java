@@ -9,7 +9,6 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import reference.ConfigFileReader;
 
 import java.text.DateFormat;
 import java.text.ParseException;

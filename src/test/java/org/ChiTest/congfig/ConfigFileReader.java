@@ -1,4 +1,4 @@
-package reference;
+package org.ChiTest.congfig;
 
 import java.io.*;
 import java.util.Properties;
@@ -8,7 +8,7 @@ import java.util.Properties;
  * 读取配置文件
  */
 public class ConfigFileReader {
-    private String profilepath="/config.properties";
+    private String profilepath= "/rc/config.properties";
 
     public ConfigFileReader(){
 

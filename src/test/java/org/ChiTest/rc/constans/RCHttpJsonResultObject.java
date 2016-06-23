@@ -1,4 +1,4 @@
-package org.ChiTest.constans;
+package org.ChiTest.rc.constans;
 
 /**
  * Created with IntelliJ IDEA.

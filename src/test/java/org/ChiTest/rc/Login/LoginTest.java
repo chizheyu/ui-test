@@ -1,12 +1,12 @@
-package org.ChiTest.Login;
+package org.ChiTest.rc.Login;
 
 
+import org.ChiTest.TestHelper;
 import org.ChiTest.congfig.ConfigureInfo;
 import org.ChiTest.Page.Page;
 import org.ChiTest.User.User;
-import org.ChiTest.constans.RCHttpJsonResultObject;
-import org.ChiTest.constans.RequestMethod;
-import org.json.JSONArray;
+import org.ChiTest.rc.constans.RCHttpJsonResultObject;
+import org.ChiTest.rc.constans.RequestMethod;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +47,7 @@ public class LoginTest {
 
         // post
         Map<String ,String> dataMap = new HashMap<>() ;
-        dataMap.put("newAlias", "我是一个POST");
+        dataMap.put("newAlias", "我是 POST" + TestHelper.getTimeMark());
         dataMap.put("resId", "1");
 
         String responseString = loginPage.sendRequest( dataMap ,RequestMethod.POST.getName(),loginFileReader.getPostUrl());

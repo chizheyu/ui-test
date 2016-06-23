@@ -1,4 +1,4 @@
-package org.ChiTest.Email;
+package org.ChiTest.rc.Email;
 
 /**
  * Created by dugancaii on 7/29/2014.

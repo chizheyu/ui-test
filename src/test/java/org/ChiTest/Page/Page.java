@@ -1,13 +1,13 @@
 package org.ChiTest.Page;
 
-import org.ChiTest.InterFace.ItemEntry;
-import org.ChiTest.InterFace.ItemFinder;
+import org.ChiTest.WebComponent.InterFace.ItemEntry;
+import org.ChiTest.WebComponent.InterFace.ItemFinder;
 import org.ChiTest.LinksMap;
 import org.ChiTest.PageLink;
 import org.ChiTest.TestHelper;
 import org.ChiTest.User.User;
 import org.ChiTest.WaitTool;
-import org.ChiTest.constans.RCHttpJsonResultObject;
+import org.ChiTest.rc.constans.RCHttpJsonResultObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -15,7 +15,7 @@ import org.json.JSONObject;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.events.EventFiringWebDriver;
-import reference.ConfigFileReader;
+import org.ChiTest.congfig.ConfigFileReader;
 
 import javax.naming.directory.NoSuchAttributeException;
 import java.io.File;
@@ -1429,6 +1429,7 @@ public class Page {
 
     }
 
+    //处理时间的工具
     public  boolean verifyTime(Date expectTime, String targetItemTimeJqueryCode,  String dateFormat  ,int timeDiff) {
         DateFormat df  = new SimpleDateFormat(dateFormat);
         String targetItemTime = (String)this.driver.executeScript(targetItemTimeJqueryCode);
@@ -1456,98 +1457,12 @@ public class Page {
         return false;
     }
     public  int findItemBySign ( String signContent, String itemCssSelector, ItemFinder a ) throws InterruptedException {
-        List<WebElement> follows;
-        int pageCount;
-        int itemNum;
-        if(!this.elementIsPresent(".cg .page.active ",PS.shortWait)){
-            pageCount = 0;
-        }else {
-            if(this.getText(".cg .page.active ").equals("")){
-                System.out.println("页面数目还没刷不出");
-                Thread.sleep(3000);
-            }
-            if(this.elementIsPresent(".cg .page ",this.getElements(".cg .page ").size()-1,".icon")){
-                itemNum =  this.getElements(".cg .page ").size()-2;
-
-                pageCount = Integer.parseInt(this.getText(".cg .page ",itemNum));
-            }else {
-                itemNum =  this.getElements(".cg .page ").size()-1;
-                pageCount = Integer.parseInt(this.getText(".cg .page ", itemNum));
-            }
-        }
-        System.out.println("page count " + pageCount);
-        System.out.println("start find item " + signContent);
-        String activePage = "1";
-        follows = this.getElements(itemCssSelector);
-        if(pageCount != 0) {
-            if(!this.getText(".page.active").equals("1")){
-                this.clickElement(".cg .page",1);
-                this.getWaitTool().waitForJavaScriptCondition("return $(\".page.active\").attr(\"title\")== 1" , 5);
-                follows = this.getElements(itemCssSelector);
-            }
-            for (int i = 0; i < pageCount ; i++) {
-                for (int j = 0; j < follows.size(); j++) {
-                    if(a.findItem(follows,j,signContent) != -2){
-                        return  a.findItem(follows,j,signContent);
-                    }
-                }
-                if(i == pageCount - 1){
-                    break;
-                }
-                this.clickElement(".page.next .arrow");
-                this.getWaitTool().waitForJavaScriptCondition("return $(\".page.active\").attr(\"title\")!= " + activePage, 5);
-                activePage = this.getAttribute(".page.active", "title");
-                follows = this.getElements(itemCssSelector);
-            }
-        }else{
-            for (int j = 0; j < follows.size(); j++) {
-                if(a.findItem(follows,j,signContent) != -2){
-                    return  a.findItem(follows,j,signContent);
-                }
-            }
-        }
-        log.info("没有发现目标"+ signContent);
-        return -1;
+        return 0;
     }
 
 
 
-    public boolean verifyCreateTime(Date compareTime, String cssSelector, String format) throws ParseException {
-        Matcher mat;
-        String regEx = "[^0-9]|/";
-        DateFormat df = new SimpleDateFormat(format);//设置日期格式
-        Pattern pat = Pattern.compile(regEx);
 
-        int pageNum = 0;
-        System.out.println("createTime  " + this.driver.findElement(By.cssSelector(cssSelector)).getAttribute("title"));
-        String createTime[] = this.driver.findElement(By.cssSelector(cssSelector)).getAttribute("title").split("\\+");
-        System.out.println("createTime 0 " + createTime[0]);
-
-        System.out.println("compare time " + df.format(compareTime));
-        Date createTimeDate = df.parse(createTime[0]);
-        compareTime = df.parse(df.format(compareTime));
-        System.out.println("compareTime " + createTimeDate.getTime());
-        System.out.println("createTimeDate " + compareTime.getTime());
-        int minutes =(int) Math.abs(createTimeDate.getTime() - compareTime.getTime())/(1000*60);
-
-        if( this.driver.findElement(By.cssSelector(cssSelector)).getText().equals("几秒前")){
-            pageNum = 0 ;
-        }
-        if( this.driver.findElement(By.cssSelector(cssSelector)).getText().contains("分钟"))
-        {
-            mat = pat.matcher(this.driver.findElement(By.cssSelector(cssSelector)).getText());
-            pageNum = Integer.parseInt(mat.replaceAll("").trim());
-        }
-        if( this.driver.findElement(By.cssSelector(cssSelector)).getText().contains("小时"))
-        {
-            minutes = minutes / 60;
-            mat = pat.matcher(this.driver.findElement(By.cssSelector(".created-time")).getText());
-            pageNum = Integer.parseInt(mat.replaceAll("").trim());
-        }
-        System.out.println("minutes is " + minutes);
-        System.out.println("pageNum is " + pageNum);
-        return Math.abs(pageNum - minutes) <= 1;
-    }
     public boolean waitElementDisappear(String elementSelector, int elementLengthAfterRemove){
         return this.getWaitTool().waitForJavaScriptCondition("return $(\""+ elementSelector +"\").length == " + elementLengthAfterRemove,5);
     }

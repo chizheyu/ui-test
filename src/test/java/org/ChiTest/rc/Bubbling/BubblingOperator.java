@@ -1,4 +1,4 @@
-package org.ChiTest.Bubbling;
+package org.ChiTest.rc.Bubbling;
 
 import org.ChiTest.Page.Page;
 

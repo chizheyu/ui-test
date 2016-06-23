@@ -1,4 +1,4 @@
-package org.ChiTest.Login;
+package org.ChiTest.rc.Login;
 
 /**
  * Created with IntelliJ IDEA.

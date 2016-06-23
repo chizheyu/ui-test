@@ -1,6 +1,6 @@
-package org.ChiTest.Login;
+package org.ChiTest.rc.Login;
 
-import reference.ConfigFileReader;
+import org.ChiTest.congfig.ConfigFileReader;
 
 /**
  * Created with IntelliJ IDEA.
@@ -54,7 +54,7 @@ public class LoginFileReader {
 
 
     public LoginFileReader(){
-        configFileReader = new ConfigFileReader("/login.properties");
+        configFileReader = new ConfigFileReader("/rc/login.properties");
         loginNameInput = configFileReader.getValue("loginNameInput");
         loginPasswordInput= configFileReader.getValue("loginPasswordInput");
         loginButton = configFileReader.getValue("loginButton");

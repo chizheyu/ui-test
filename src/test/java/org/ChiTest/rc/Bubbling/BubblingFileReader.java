@@ -1,6 +1,6 @@
-package org.ChiTest.Bubbling;
+package org.ChiTest.rc.Bubbling;
 
-import reference.ConfigFileReader;
+import org.ChiTest.congfig.ConfigFileReader;
 
 /**
  * Created by dugancaii on 10/20/2014.
@@ -77,7 +77,7 @@ public class BubblingFileReader {
 
     private String bubblingFavorCount;
     public BubblingFileReader(){
-        configFileReader = new ConfigFileReader("/BubblingConfig.properties");
+        configFileReader = new ConfigFileReader("/rc/BubblingConfig.properties");
         this.bubblingTextContent = configFileReader.getValue("BubblingTextContent");
         this.bubblingItem = configFileReader.getValue("bubblingItem");
         this.userHoverCard = configFileReader.getValue("userHoverCard");

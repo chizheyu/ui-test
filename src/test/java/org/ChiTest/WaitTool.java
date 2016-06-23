@@ -63,8 +63,8 @@ public class WaitTool {
 	  * @return WebElement	the first WebElement using the given method, or null (if the timeout is reached)
 	  */
 	public WebElement waitForElement( final By by, int timeOutInSeconds) {
-		WebElement element; 
-		try{	
+		WebElement element;
+		try{
 			//To use WebDriverWait(), we would have to nullify implicitlyWait(). 
 			//Because implicitlyWait time also set "driver.findElement()" wait time.  
 			//info from: https://groups.google.com/forum/?fromgroups=#!topic/selenium-users/6VO_7IXylgY

@@ -1,4 +1,4 @@
-package org.ChiTest.Email;
+package org.ChiTest.rc.Email;
 
 import org.ChiTest.Page.Page;
 import org.junit.Ignore;

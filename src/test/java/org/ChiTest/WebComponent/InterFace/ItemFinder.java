@@ -1,4 +1,4 @@
-package org.ChiTest.InterFace;
+package org.ChiTest.WebComponent.InterFace;
 
 import org.openqa.selenium.WebElement;
 

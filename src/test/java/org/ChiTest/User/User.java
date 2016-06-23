@@ -6,7 +6,7 @@ import org.ChiTest.Page.Page;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
-import reference.ConfigFileReader;
+import org.ChiTest.congfig.ConfigFileReader;
 
 import java.text.ParseException;
 import java.util.LinkedList;

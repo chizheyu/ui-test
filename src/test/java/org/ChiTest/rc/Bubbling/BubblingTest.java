@@ -1,4 +1,4 @@
-package org.ChiTest.Bubbling;
+package org.ChiTest.rc.Bubbling;
 
 import org.ChiTest.congfig.ConfigureInfo;
 import org.ChiTest.Page.PS;

@@ -1,6 +1,6 @@
-package org.ChiTest.Email;
+package org.ChiTest.rc.Email;
 
-import reference.ConfigFileReader;
+import org.ChiTest.congfig.ConfigFileReader;
 
 /**
  * Created by dugancaii on 11/19/2014.
@@ -15,7 +15,7 @@ public class EmailFileReader {
 
     private String checkEmail;
     public EmailFileReader(){
-        emailFileReader = new ConfigFileReader("/EmailConfig.properties");
+        emailFileReader = new ConfigFileReader("/rc/EmailConfig.properties");
         userName = emailFileReader.getValue("userName");
         password = emailFileReader.getValue("password");
         emailTitle = emailFileReader.getValue("emailTitle");

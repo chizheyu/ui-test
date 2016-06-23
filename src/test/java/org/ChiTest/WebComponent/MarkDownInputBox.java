@@ -1,12 +1,12 @@
 package org.ChiTest.WebComponent;
 
-import org.ChiTest.InterFace.ImageSender;
+import org.ChiTest.WebComponent.InterFace.ImageSender;
 import org.ChiTest.Page.Page;
 import org.ChiTest.User.User;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriverException;
-import reference.ConfigFileReader;
+import org.ChiTest.congfig.ConfigFileReader;
 
 import java.text.DateFormat;
 import java.text.ParseException;
