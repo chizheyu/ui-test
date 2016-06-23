@@ -10,5 +10,7 @@
 
 #### quick start：
 1.clone 代码
+
 2.将配置文件 resources/config.properties 里的 defaultUserName= defaultUserPassword= 换成自己的预账号和密码
+
 3.运行 org.ChiTest.rc.Login.LoginTest#test01_do_post_and_get
