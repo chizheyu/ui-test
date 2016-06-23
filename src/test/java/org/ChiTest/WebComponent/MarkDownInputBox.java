@@ -221,7 +221,7 @@ public class MarkDownInputBox extends CommentBox {
     public void verifyEmojiHint(Page page, String emojiString){
         page.sendKeys(boxInputSelector, emojiString);
         page.clearAndSendKeys(boxInputSelector, page.getAttribute(boxInputSelector, "value"));
-        assertNotEquals("表情的提示不正确", -1,page.findItemInOnePageByAttributeContains(".atwho-view .cur", "data-value",emojiString+":" ));
+        assertNotEquals("表情的提示不正确", -1,page.findItemNumberInOnePageByAttributeContains(".atwho-view .cur", "data-value",emojiString+":" ));
         page.sendKeys(Keys.ENTER);
        // page.getDriver().getKeyboard().sendKeys(Keys.ENTER);
     }

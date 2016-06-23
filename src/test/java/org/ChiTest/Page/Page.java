@@ -86,12 +86,6 @@ public class Page {
     public String getImgPreviewUrl() {
         return this.getBaseUrl() + "api/";
     }
-    public String getProjectImgStoreUrl() {
-        return "https://dn-coding-net-project-icon.qbox.me";
-    }
-    public String getDocumentImgStoreUrl() {
-        return "https://dn-coding-net-test-self.qbox.me/";
-    }
     public WaitTool getWaitTool() {
         return waitTool;
     }
@@ -118,65 +112,44 @@ public class Page {
 	public String getUrl() {
         return pageUrl;
     }
-    public String getBubblingUrl() {
-        return baseUrl + "pp";
-    }
-    public String getUserCenterUrl() {
-        return baseUrl + "user";
-    }
-    public String getHotBubblingUrl() {
-        return baseUrl + "pp/hot";
-    }
-    public String getFriendsUrl() {
-        return  baseUrl + "user/relationship/friends";
-    }
-    public String getRelationCenterUrl() {
-        return  baseUrl + "user/relationship";
-    }
-    public String getFansUrl() {
-        return  baseUrl + "user/relationship/fans";
-    }
-    public String getProjectUrl() {
-        return  baseUrl + "user/projects/all";
-    }
-    public String getCreatedProjectUrl() {
-        return  baseUrl + "user/projects/created";
-    }
-    public String getPageHeader(){
-        return this.getText(".ui.dividing.header");
-    }
     public void backToTop(){
         this.executeScript("window.scrollTo(0,0)");
     }
     public int getScrollY(){
         return ((Long) this.executeScript("return window.scrollY")).intValue();
     }
+    public Cookie getStagingSid(String sidValue) throws ParseException {
+        return new Cookie("sid", sidValue, "staging.coding.net","/",
+                (new SimpleDateFormat("yyyy-MM-dd")).parse("2017-08-09"));
+    }
+
+    /**
+     * 跳转到某个 url, 若 url 相同则不跳转
+     * @param url
+     */
     public void navigate(String url)   {
         try {
-            if (!this.driver.getCurrentUrl().equals(url)) {
-                this.driver.navigate().to(url);
+            if (this.driver.getCurrentUrl().equals(url)) {
+                return;
             }
+            this.driver.navigate().to(url);
 
         }
         catch (TimeoutException e){
             System.out.println("page " + url + "load timeout");
         }
     }
-    public Cookie getStagingSid(String sidValue) throws ParseException {
-        return new Cookie("sid", sidValue, "staging.coding.net","/",
-                (new SimpleDateFormat("yyyy-MM-dd")).parse("2017-08-09"));
-    }
+
     public boolean navigate(String url, String cssSelectorForWaitingElement)  {
         try {
-            if (!this.driver.getCurrentUrl().equals(url)) {
-                this.driver.navigate().to(url);
-                if(this.getWaitTool().waitForElement(By.cssSelector(cssSelectorForWaitingElement),PS.longWait) == null){
-                    System.out.println("页面：" + url + "过了10秒都没刷出来或未到指定页面");
-                    return false;
-                }
+
+            if (this.driver.getCurrentUrl().equals(url)) {
+                return false;
             }
-            if(!this.elementIsPresent(cssSelectorForWaitingElement,2)){
-                this.refresh(cssSelectorForWaitingElement);
+            this.driver.navigate().to(url);
+            if(this.getWaitTool().waitForElement(By.cssSelector(cssSelectorForWaitingElement),PS.longWait) == null){
+                System.out.println("页面：" + url + "过了10秒都没刷出来或未到指定页面");
+                return false;
             }
         }
         catch (TimeoutException e){
@@ -190,27 +163,6 @@ public class Page {
         return true;
     }
 
-    /**
-     var data = new FormData();
-     data.append('user', 'person');
-     data.append('pwd', 'password');
-     data.append('organization', 'place');
-     data.append('requiredkey', 'key');
-
-     var xhr = new XMLHttpRequest();
-     xhr.open('POST', 'somewhere', false);
-     xhr.onreadystatechange = function() {
-        if(xhr.readyState == 4 && xhr.status == 200) {
-            var para=document.createElement("mySeleniumDiv");
-            document.getElementById("mySeleniumDiv").innerHTML=xmlhttp.responseText;
-        }
-     }
-     xhr.send(data);
-
-     */
-
-
-
 
     public String sendRequest(Map<String ,String>  data ,String methodName,  String url ){
         String dataString = "";
@@ -220,7 +172,7 @@ public class Page {
                 dataString += "\ndata.append('"+ entry.getKey() + "','" + entry.getValue() + "');\n";
             }
         }
-
+        //发送一个 ajax 请求,并创建一个元素来存返回的 请求值
         String script =
                 "var xhr = new XMLHttpRequest();\n" +
                 "     xhr.open('" + methodName + "', '" + url + "', false);\n" +
@@ -233,6 +185,7 @@ public class Page {
                 "     xhr.send(data);";
 
         driver.executeScript(dataString + script);
+        //获取返回值
         return (String) driver.executeScript("return document.getElementsByTagName(\"mySeleniumDiv\").innerHTML");
     }
 
@@ -305,7 +258,7 @@ public class Page {
             e.printStackTrace();
         }
 
-
+        //根据 json 的 key 字段,  来填充返回的结果
         for(String entry:obj.keySet()){
             try {
                 TestHelper.setClassField(object,entry, obj.get(entry).toString());
@@ -332,9 +285,6 @@ public class Page {
                     System.out.println("页面：" + url + "过了10秒都没刷出来或未到指定页面");
                     return false;
                 }
-            }
-            if(!this.elementIsPresent(cssSelectorForWaitingElement,2)){
-                this.refresh(cssSelectorForWaitingElement);
             }
         }
         catch (TimeoutException e){
@@ -364,15 +314,13 @@ public class Page {
     }
     public void refresh(String url, String cssSelectorForWaitingElement) {
         try {
-            if (!this.driver.getCurrentUrl().equals(url)) {
-                this.driver.navigate().to(url);
-
-            }else{
+                if(this.navigate(url, cssSelectorForWaitingElement)){
+                    return;
+                }
                 this.driver.navigate().refresh();
-            }
-            if(null == this.getWaitTool().waitForElement(By.cssSelector(cssSelectorForWaitingElement), 30)){
-                assertEquals(" can not wait element "+ cssSelectorForWaitingElement +" page " +"load timeout or did not navigate to target file",1,2);
-            }
+                if(null == this.getWaitTool().waitForElement(By.cssSelector(cssSelectorForWaitingElement), PS.longWait)){
+                    assertEquals(" can not wait element "+ cssSelectorForWaitingElement +" page " +"load timeout or did not navigate to target file",1,2);
+                }
         }
         catch (TimeoutException e){
             System.out.println("page " + url +"load timeout");
@@ -392,24 +340,9 @@ public class Page {
         }
     }
     public void refresh( String cssSelectorForWaitingElement)  {
-        try {
-                this.driver.navigate().refresh();
-                if(null == this.getWaitTool().waitForElement(By.cssSelector(cssSelectorForWaitingElement), 5)){
-                    System.out.println(" can not wait element "+ cssSelectorForWaitingElement +" page " +"load timeout or did not navigate to target file");
-                }
-        }
-        catch (TimeoutException e){
-            System.out.println("page " +"load timeout");
-        }
+        refresh(this.driver.getCurrentUrl(), cssSelectorForWaitingElement);
     }
-    public void refresh( )  {
-        try {
-            this.driver.navigate().refresh();
-        }
-        catch (TimeoutException e){
-            System.out.println("page " +"load timeout");
-        }
-    }
+
     public void back(String cssSelectorForWaitingElement) {
         try {
             this.driver.navigate().back();
@@ -619,7 +552,7 @@ public class Page {
        return this.getWaitTool().waitForElement(this.getElement(cssSelector,num), timeOut);
     }
     public int getIndexPosition(String itemName, String indexItemSelector) {
-        return this.findItemInOnePageByTextContains( indexItemSelector, itemName);
+        return this.findItemNumberInOnePageByTextContains( indexItemSelector, itemName);
     }
 
     public ItemFinder getContainsFinder(){
@@ -655,25 +588,7 @@ public class Page {
         }
     }
     public boolean elementIsPresent(String cssSector, String childCssSector){
-        try {
-            driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS); //nullify implicitlyWait()
-            if(this.driver.findElement(By.cssSelector(cssSector)).findElement(By.cssSelector(childCssSector))!=null){
-                return true;
-            }
-            driver.manage().timeouts().implicitlyWait(DEFAULT_WAIT_4_PAGE, TimeUnit.SECONDS); //reset implicitlyWait
-            return false;
-        } catch (NoSuchElementException e) {
-            System.out.println("can not find the element " + childCssSector + " in " + cssSector );
-            return false;
-        }
-        catch (NullPointerException e) {
-            System.out.println("can not find the element " + childCssSector + " in " + cssSector );
-            return false;
-        }
-        catch (IndexOutOfBoundsException e) {
-            System.out.println("can not find the element " + childCssSector + " in " + cssSector );
-            return false;
-        }
+        return elementIsPresent( cssSector,  0,  childCssSector);
     }
     public boolean elementIsPresent(String cssSector, int num, String childCssSector, int timeOutSeconds){
         try {
@@ -793,10 +708,22 @@ public class Page {
     }
 
     public int getPageNum(String cssSelector, String regEx){
+       return getPageNum( cssSelector, 0 ,regEx);
+
+    }
+    public int getPageNum(String cssSelector){
+        return getPageNum(cssSelector, 0 ,"[^0-9]|/");
+    }
+    public int getPageNum(String cssSelector, int num){
+        return getPageNum(cssSelector, num ,"[^0-9]|/");
+    }
+
+
+    public int getPageNum(String cssSelector, int num , String regEx){
         Matcher mat;
         try{
             this.getWaitTool().waitForJavaScriptCondition("return $(\"" + cssSelector + "\").text().indexOf(\"()\") == -1", 5);
-            String tempString = this.driver.findElement(By.cssSelector(cssSelector)).getText();
+            String tempString = this.driver.findElements(By.cssSelector(cssSelector)).get(num).getText();
             Pattern pat = Pattern.compile(regEx);
             mat = pat.matcher(tempString);
             System.out.println("the page num is " +  Integer.parseInt(mat.replaceAll("").trim()));
@@ -805,40 +732,11 @@ public class Page {
             System.out.println(" the num is zero ");
             return 0;
         }
-
     }
-    public int getPageNum(String cssSelector){
-        Matcher mat;
-        try{
-            this.getWaitTool().waitForJavaScriptCondition("return $(\"" + cssSelector + "\").text().indexOf(\"()\") == -1", 5);
-            String tempString = this.driver.findElement(By.cssSelector(cssSelector)).getText();
-            Pattern pat = Pattern.compile("[^0-9]|/");
-            mat = pat.matcher(tempString);
-            System.out.println("the page num is " +  Integer.parseInt(mat.replaceAll("").trim()));
-            return Integer.parseInt(mat.replaceAll("").trim());
-        }catch (NoSuchElementException e){
-            System.out.println(" the num is zero ");
-            return 0;
-        }
-    }
-    public int getPageNum(String cssSelector, int num){
-        Matcher mat;
-        try{
-            this.getWaitTool().waitForJavaScriptCondition("return $(\"" + cssSelector + "\").text().indexOf(\"()\") == -1", 5);
-            String tempString = this.driver.findElements(By.cssSelector(cssSelector)).get(num).getText();
-            Pattern pat = Pattern.compile("[^0-9]|/");
-            mat = pat.matcher(tempString);
-            System.out.println("the page num is " +  Integer.parseInt(mat.replaceAll("").trim()));
-            return Integer.parseInt(mat.replaceAll("").trim());
-        }catch (NoSuchElementException e){
-            System.out.println(" the num is zero ");
-            return 0;
-        }
-    }
-    public int getPageNum(String cssSelector, int num, String childSelector){
+    public int getPageNum(String cssSelector, int num, String childSelector,String regEx){
         try{
             this.getWaitTool().waitForJavaScriptCondition("return $(\"" + cssSelector + "\").text().indexOf(\"()\") == -1",PS.midWait);
-            return Integer.parseInt(Pattern.compile("[^0-9]|/").matcher(getText(cssSelector, num,  childSelector)).replaceAll("").trim());
+            return Integer.parseInt(Pattern.compile(regEx).matcher(getText(cssSelector, num,  childSelector)).replaceAll("").trim());
         }catch (NoSuchElementException e){
             return 0;
         }
@@ -846,24 +744,7 @@ public class Page {
     }
 
     public int getPageNumInParentheses(String cssSelector){
-        Matcher mat;
-        try{
-            if(this.elementIsPresent(cssSelector,1)) {
-                this.getWaitTool().waitForJavaScriptCondition("return $(\"" + cssSelector + "\").text().indexOf(\"()\") == -1", 5);
-                String tempString = this.getText(cssSelector);
-                Pattern pat = Pattern.compile("（([0-9]*?)）");
-                mat = pat.matcher(tempString);
-                mat.find();
-                System.out.println("the page num is " + mat.group(1));
-                return Integer.parseInt(mat.group(1));
-            }else {
-                return 0;
-            }
-        }catch (Exception e){
-            System.out.println(" the num is zero ");
-            return 0;
-        }
-
+        return  getPageNum(cssSelector, "（([0-9]*?)）");
     }
 
 
@@ -982,22 +863,7 @@ public class Page {
         }
     }
     public boolean  clickElement(String cssSelector, String cssSelectorWaitingElement){
-        try {
-            this.waitForElement(cssSelector,3);
-            this.getWaitTool().waitForElementClickable(By.cssSelector(cssSelector),5);
-            this.driver.findElement(By.cssSelector(cssSelector)).click();
-            if(null == this.getWaitTool().waitForElement(By.cssSelector(cssSelectorWaitingElement),5)){
-               return false;
-            }
-            return true;
-        } catch (NoSuchElementException e) {
-            assertEquals("this element: "+cssSelector +" is not exist ", 2,3);
-            return false;
-        }
-        catch (ElementNotVisibleException e) {
-            assertEquals("this element: "+cssSelector +" is not visible ", 2,3);
-            return false;
-        }
+        return clickElement(cssSelector, 0, cssSelectorWaitingElement);
     }
     public boolean  clickElementWithTextChange(String cssSelector, String cssSelectorWaitingElement, String textSelector){
         String watchCountText = getText(textSelector);
@@ -1045,7 +911,7 @@ public class Page {
     }
     public boolean clickElement(String cssSector, int i, String cssSelectorWaitingElement){
         try {
-            this.waitForElement(cssSector,5);
+            this.waitForElement(cssSector,PS.midWait);
             this.getWaitTool().waitForElementClickable(this.driver.findElements(By.cssSelector(cssSector)).get(i),5);
 
             this.driver.findElements(By.cssSelector(cssSector)).get(i).click();
@@ -1081,97 +947,17 @@ public class Page {
         }
     }
 
-    public boolean checkAvatar(String imageSelector,  String avatarLinkSelector,User user, int avatarNum ){
-        try{
-            this.getWaitTool().waitForElement(By.cssSelector(imageSelector),3);
-            if(!checkImage( imageSelector, user.getAvatar(), avatarNum)){
-                System.out.println("头像的配图有问题\n");
-                return false;
-            }
-            System.out.println("avatar link is "+ this.getAttribute(avatarLinkSelector ,"href", avatarNum));
-            if(!this.getAttribute(avatarLinkSelector ,"href" ,avatarNum).equals(user.getHomePageLink())) {
-                System.out.println("头像的链接有问题");
-                return false;
-            }
-        }catch (NoSuchElementException e) {
-            System.out.println("this element: "+avatarLinkSelector +" is not exist ");
-            return false;
-        }
-        catch (ElementNotVisibleException e) {
-            System.out.println("this element: "+avatarLinkSelector +" is not visible ");
-            return false;
-        }catch (NullPointerException e) {
-            System.out.println("NullPointer!! this element: "+avatarLinkSelector +" is not exist ");
-            return false;
-        }
-        return true;
-    }
-    public boolean checkImage(String imageSelector, String imageSrc, int imageNum){
-        try{
-            System.out.println("src " + this.getAttribute(imageSelector ,"src", imageNum));
-            System.out.println("imageSrc " + imageSrc);
-            System.out.println("imageSelector " + imageSelector);
-            return this.getAttribute(imageSelector, "src",imageNum).contains(imageSrc);
-        }catch (NoSuchElementException e) {
-            System.out.println("this element: "+imageSelector +" is not exist ");
-            return false;
-        }
-        catch (ElementNotVisibleException e) {
-            System.out.println("this element: "+imageSelector +" is not visible ");
-            return false;
-        }catch (NullPointerException e) {
-            System.out.println("NullPointer!! this element: "+imageSelector +" is not exist ");
-            return false;
-        }
-    }
-    public boolean checkAvatar(String imageSelector,  String avatarLinkSelector,User user){
-        try{
-            if(!checkImage( imageSelector,  user.getAvatar())){
-                System.out.println("头像的配图有问题\n");
-                return false;
-            }
-            System.out.println("avatar link is "+ this.getAttribute(avatarLinkSelector, "href"));
-            if(!this.getAttribute(avatarLinkSelector, "href").contains("/u/"+user.getUserLoginName())) {
-                System.out.println("头像的链接有问题");
-                return false;
-            }
-        }catch (NoSuchElementException e) {
-            System.out.println("this element: "+avatarLinkSelector +" is not exist ");
-            return false;
-        }
-        catch (ElementNotVisibleException e) {
-            System.out.println("this element: "+avatarLinkSelector +" is not visible ");
-            return false;
-        }catch (NullPointerException e) {
-            System.out.println("NullPointer!! this element: "+avatarLinkSelector +" is not exist ");
-            return false;
-        }
-        return true;
-    }
+
+
+
     public boolean checkImage(String imageSelector, String imageSrc){
-        try{
-            return this.getAttribute(imageSelector, "src").contains(imageSrc);
-        }catch (NoSuchElementException e) {
-            System.out.println("this element: "+imageSelector +" is not exist ");
-            return false;
-        }
-        catch (ElementNotVisibleException e) {
-            System.out.println("this element: "+imageSelector +" is not visible ");
-            return false;
-        }catch (NullPointerException e) {
-            System.out.println("NullPointer!! this element: "+imageSelector +" is not exist ");
-            return false;
-        }
-    }
-    public void checkUserSpaceLink(String userName, String cssSelectorForUserSpaceLink,String linkURL ) throws InterruptedException {
-        assertEquals("用户空间url链接有误", linkURL,this.getLink(cssSelectorForUserSpaceLink));
-        linksMap.addLink(linkURL,new PageLink(userName,"#user-space .user-name"));
+        return checkImage(imageSelector,  0 ,imageSrc);
     }
 
 
     public boolean checkImage(String imageSelector, int num, String imageSrc){
         try{
-            return this.getAttribute(imageSelector, "src").contains(imageSrc);
+            return this.getAttribute(imageSelector,  "src",num).contains(imageSrc);
         }catch (NoSuchElementException e) {
             System.out.println("this element: "+imageSelector +" is not exist ");
             return false;
@@ -1191,13 +977,7 @@ public class Page {
         return hrefLink;
     }
 
-    public void clickTabTestPresent(String CssSecector,  String elementName, String clickTab) throws NoSuchAttributeException, InterruptedException {
-        this.getElement(clickTab).click();
-        Thread.sleep(2000);
-        assertTrue(elementName + "不存在", this.elementIsPresent(CssSecector, null, null));
 
-
-    }
 
     public String getLink(String cssSector)  {
         return this.getAttribute(cssSector,"href");
@@ -1263,18 +1043,7 @@ public class Page {
         }
     }
     public String getText(String cssSector){
-        try {
-            if( (! this.waitForContentNotNull(cssSector,10)) &&(this.driver.findElement(By.cssSelector(cssSector)) == null)) {
-                return null;
-            }
-             return this.driver.findElement(By.cssSelector(cssSector)).getText();
-        } catch (NoSuchElementException e) {
-            System.out.println("can not find element " + cssSector);
-            return null;
-        } catch (TimeoutException e){
-            System.out.println("can not find element " + cssSector);
-            return null;
-        }
+        return getText(cssSector, 0);
     }
     public String getScreenFileDir(){
         return configFileReader.getValue("screenDir");
@@ -1325,17 +1094,7 @@ public class Page {
 
     }
     public String getAttribute(String cssSector, String Attribute){
-        try {
-            if(this.waitForElement(cssSector,3) ==null &&
-                    (this.driver.findElement(By.cssSelector(cssSector)).getAttribute(Attribute) == null)) {
-                return null;
-            }
-            return this.driver.findElement(By.cssSelector(cssSector)).getAttribute(Attribute);
-        } catch (NoSuchElementException e) {
-            System.out.println("can not find element " + cssSector);
-            return null;
-        }
-
+        return getAttribute( cssSector, Attribute, 0);
     }
     public String getAttribute(String cssSector, String Attribute, int num){
         try {
@@ -1359,14 +1118,7 @@ public class Page {
         return null;
     }
     public void clearAndSendKeys(String cssSector, String inputContents){
-        try {
-            this.driver.findElement(By.cssSelector(cssSector)).clear();
-            this.driver.findElement(By.cssSelector(cssSector)).sendKeys(inputContents);
-        } catch (NoSuchElementException e) {
-            System.out.println("can not find element " + cssSector);
-        }catch (ElementNotVisibleException e) {
-            System.out.println("the element: " + cssSector+" is not visible");
-        }
+        clearAndSendKeys(cssSector,0,inputContents);
     }
     public void clearAndSendKeys(String cssSector, int num, String inputContents){
         try {
@@ -1379,14 +1131,7 @@ public class Page {
         }
     }
     public void sendKeys(String cssSector, String inputContents){
-        try {
-            this.waitTool.waitForElement(By.cssSelector(cssSector),4);
-            this.driver.findElement(By.cssSelector(cssSector)).sendKeys(inputContents);
-        } catch (NoSuchElementException e) {
-            System.out.println("can not find element " + cssSector);
-        }catch (ElementNotVisibleException e) {
-            System.out.println("the element: " + cssSector+" is not visible");
-        }
+        sendKeys(cssSector, 0,  inputContents);
     }
     public void sendImgFilePath( String cssSelectorForImgInput,String filePath) {
         if( isChromeDriver()) {
@@ -1531,51 +1276,7 @@ public class Page {
             this.clickChildElement(selector, num, childSelector);
         }
     }
-    public boolean verifyHint(String hintText) {
-        List<WebElement> tempWebElementList;//临时的web元素列表
-        try {
-            if(!this.elementIsPresent(".outer span ",3)){
-                return false;
-            }
-            this.moveToElement(".outer span ");
-            tempWebElementList = this.getElements(".outer span");
-            String verifyText = "ii";
-            for (WebElement aTempWebElementList : tempWebElementList) {
-                verifyText = aTempWebElementList.getText();
-                if (verifyText.equals(hintText)) {
-                    try {
-                        this.moveToElement(".outer span ");
-                        if(this.elementIsPresent(".flash .close",PS.shortWait)){
-                            try {
-                                this.clickElement(".flash .close");
-                            }catch (WebDriverException e){
-                                log.error("提示关闭按钮无法点击");
-                            }
-                        }
-                        return true;
-                    }catch (ElementNotVisibleException e) {
-                        return true;
-                    }
-                }
-            }
-            if(verifyText.equals("ii")) {
-                return false;
-            }
-            assertEquals("网页提示信息不正确: " + hintText, hintText, verifyText);
-            return false;
-        } catch (ElementNotVisibleException e) {
-            log.error("hint "+hintText+" is not visible");
-            return false;
-        }
-        catch(NoSuchElementException e){
-            log.error("no such hint "+ hintText);
-            return false;
-        }
-        catch (org.openqa.selenium.StaleElementReferenceException e){
-            log.error("页面提示flash可能已经消失，导致无法捕捉");
-            return false;
-        }
-    }
+
     public void checkItemInMap( Map<String,ItemEntry> itemEntryMap, String itemContentSelector,String itemIconSelector, String checkMessage ){
         ItemEntry itemEntry;
         List<WebElement> checkElements = this.getElements(itemContentSelector);
@@ -1618,24 +1319,7 @@ public class Page {
             assertEquals(errorMessage, errorMessage, "如下entry没找到： ");
         }
     }
-    public void testPageTurning(String url){
-        this.navigate(url);
-        if( !this.elementIsPresent(".page",3) || this.getElements(".page").size()<3 ){
-            System.out.println("该页面无页可翻 url"+ url);
-            return;
-        }
 
-        assertEquals("url "+ url + " 进入翻页页面显示的页数不是第一页", this.getText(".page.active span"),"1");
-        this.clickElement(".page.next .arrow");
-        this.getWaitTool().waitForJavaScriptCondition("return $('.page.active span').text() == 2",3);
-        assertEquals("url "+ url + " 无法翻页到下一页", this.getText(".page.active span"),"2" );
-        this.clickElement(".page.prev .arrow");
-        this.getWaitTool().waitForJavaScriptCondition("return $('.page.active span').text() == 1",3);
-        assertEquals("url "+ url + " 无法翻页到前一页", this.getText(".page.active span"),"1" );
-        this.clickElement(".page[title='2'] ");
-        this.getWaitTool().waitForJavaScriptCondition("return $('.page.active span').text() == 2",3);
-        assertEquals("url "+ url + " 无法翻页到指定页数", this.getText(".page.active span"),"2" );
-    }
     public void testSelectHintItemWithKeyboard(String itemName,String hintItemSelector, String inputSelector,String hintSign ){
         this.clearAndSendKeys(inputSelector, hintSign);
         this.waitForElement(hintItemSelector, 5);
@@ -1681,7 +1365,7 @@ public class Page {
         System.out.println("not find " + itemsSelector);
         return  -1;
     }
-    public int findItemInOnePageByTextContains(String itemsSelector,String itemText){
+    public int findItemNumberInOnePageByTextContains(String itemsSelector, String itemText){
         int tagCount = this.getElementCount(itemsSelector);
         for(int i = 0; i<tagCount ;i++) {
             if (this.getText(itemsSelector,i).contains(itemText)){
@@ -1690,7 +1374,7 @@ public class Page {
         }
         return  -1;
     }
-    public int findItemInOnePageByAttributeContains(String itemsSelector,String attribute,String itemText){
+    public int findItemNumberInOnePageByAttributeContains(String itemsSelector, String attribute, String itemText){
         int tagCount = this.getElementCount(itemsSelector);
         for(int i = 0; i<tagCount ;i++) {
             if (this.getAttribute(itemsSelector,attribute,i).contains(itemText)){
